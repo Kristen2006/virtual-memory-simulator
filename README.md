@@ -70,22 +70,22 @@ Total page faults
 Step-by-step memory state
 ## 📁 Project Structure
 
+```
 virtual-memory-simulator/
 │
-├── public/                 # Static files
+├── public/
 │
-├── src/                    # Main source code
-│   ├── App.jsx             # Main React component (simulation logic)
-│   ├── main.jsx            # Entry point
-│   └── index.css           # Global styles
+├── src/
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
 │
-├── .gitignore              # Git ignored files
-├── index.html              # Root HTML file
-├── package.json            # Project dependencies & scripts
-├── package-lock.json       # Dependency lock file
-├── vite.config.js          # Vite configuration
-├── eslint.config.js        # Linting rules
+├── .gitignore
+├── index.html
+├── package.json
+├── package-lock.json
+├── vite.config.js
+├── eslint.config.js
 │
-└── README.md               # Project documentation
-Graph comparison of algorithms
-
+└── README.md
+```
