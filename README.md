@@ -21,7 +21,21 @@ Vite
 npm install
 npm run dev
 
+
 Then open:
 
 http://localhost:5173
 📊 Example Input
+Reference String: 7,0,1,2,0,3,0,4,2,3,0,3,2
+Frames: 3
+🧠 Concepts Covered
+Paging
+Segmentation (basic concept)
+Page Faults
+Demand Paging
+LRU Algorithm
+Optimal Algorithm
+📈 Output
+Total page faults
+Step-by-step memory state
+Graph comparison of algorithms
