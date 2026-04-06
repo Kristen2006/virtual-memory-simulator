@@ -68,69 +68,24 @@ Optimal Algorithm
 Total page faults
 
 Step-by-step memory state
+## 📁 Project Structure
 
+virtual-memory-simulator/
+│
+├── public/                 # Static files
+│
+├── src/                    # Main source code
+│   ├── App.jsx             # Main React component (simulation logic)
+│   ├── main.jsx            # Entry point
+│   └── index.css           # Global styles
+│
+├── .gitignore              # Git ignored files
+├── index.html              # Root HTML file
+├── package.json            # Project dependencies & scripts
+├── package-lock.json       # Dependency lock file
+├── vite.config.js          # Vite configuration
+├── eslint.config.js        # Linting rules
+│
+└── README.md               # Project documentation
 Graph comparison of algorithms
 
-FLOWCHART
-
-START
-   ↓
-User Inputs:
-- Page Reference String
-  
-- Frame Capacity
-  
-   ↓
-Click "Run Simulation"
-
-   ↓
-Parse Input Data
-
-   ↓
-Run LRU Algorithm
-
-   ↓
-Check:
-
-Is page in memory?
-   ↓
-Yes → HIT
-
-No  → PAGE FAULT
-
-   ↓
-Update Frames (LRU logic)
-   ↓
-Store Steps + Count Faults
-   ↓
-Run Optimal Algorithm
-   ↓
-Check:
-
-Is page in memory?
-   ↓
-Yes → HIT
-
-No  → PAGE FAULT
-   ↓
-Replace page (Optimal logic)
-
-   ↓
-Store Steps + Count Faults
-
-   ↓
-Display Results:
-
-- LRU Faults
-  
-- Optimal Faults
-  
-   ↓
-Show Graph Comparison
-
-   ↓
-Show Step-by-Step Table
-
-   ↓
-  
-END
