@@ -1,16 +1,27 @@
-# React + Vite
+🧠 Virtual Memory Management Simulator
+📌 Overview
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is an interactive web-based simulator that demonstrates key concepts of operating system memory management, including paging, segmentation, and page replacement algorithms. It allows users to visualize how memory is allocated and how different algorithms affect performance.
 
-Currently, two official plugins are available:
+🎯 Features
+🔹 Paging simulation with frame allocation
+🔹 Page fault detection and tracking
+🔹 LRU (Least Recently Used) algorithm
+🔹 Optimal page replacement algorithm
+🔹 Step-by-step execution table
+🔹 Interactive UI with user input
+🔹 Graphical comparison of algorithms
+🔹 Performance analysis (fault comparison)
+⚙️ Technologies Used
+React.js
+JavaScript
+HTML & CSS
+Vite
+🧪 How to Run
+npm install
+npm run dev
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Then open:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+http://localhost:5173
+📊 Example Input
