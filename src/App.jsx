@@ -489,6 +489,14 @@ export default function App() {
   const [results, setResults] = useState(null);
   const [activeTab, setActiveTab] = useState("lru");
   const [animated, setAnimated] = useState(false);
+   // Segmentation state
+  const [segments, setSegments] = useState([
+    { id: 0, base: 1000, limit: 500 },
+    { id: 1, base: 2000, limit: 300 },
+    { id: 2, base: 3000, limit: 800 }
+  ]);
+  const [logicalAddr, setLogicalAddr] = useState({ segment: 0, offset: 100 });
+  const [segResult, setSegResult] = useState(null);
 
   const runSimulation = () => {
     const pages = input.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n));
