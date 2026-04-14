@@ -50,6 +50,16 @@ function simulateOptimal(pages, capacity) {
   });
   return { faults, steps };
 }
+// -------- SEGMENTATION --------
+function simulateSegmentation(segments, logicalAddress) {
+  // segments: [{id, base, limit}, ...]
+  // logicalAddress: {segment, offset}
+  const segment = segments.find(s => s.id === logicalAddress.segment);
+  if (!segment) return { error: "Segment not found" };
+  if (logicalAddress.offset >= segment.limit) return { error: "Offset exceeds segment limit" };
+  const physicalAddress = segment.base + logicalAddress.offset;
+  return { physicalAddress, segment };
+}
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
