@@ -117,7 +117,24 @@ function simulateFragmentation(allocations, totalMemory) {
       steps.push({ step: i, action: "deallocate", size: alloc.size, start, success: start !== -1, memory: [...memory] });
     }
   });
-  
+    // Calculate fragmentation
+  let freeBlocks = [];
+  let current = 0;
+  while (current < totalMemory) {
+    if (!memory[current]) {
+      let size = 0;
+      while (current + size < totalMemory && !memory[current + size]) size++;
+      freeBlocks.push(size);
+      current += size;
+    } else {
+      current++;
+    }
+  }
+  const totalFree = freeBlocks.reduce((a, b) => a + b, 0);
+  const largestFree = Math.max(...freeBlocks, 0);
+  const fragmentation = totalFree - largestFree;
+  return { steps, fragmentation, totalFree, largestFree };
+}
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
