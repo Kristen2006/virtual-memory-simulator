@@ -60,6 +60,29 @@ function simulateSegmentation(segments, logicalAddress) {
   const physicalAddress = segment.base + logicalAddress.offset;
   return { physicalAddress, segment };
 }
+// -------- DEMAND PAGING --------
+function simulateDemandPaging(pages, capacity, pageTable) {
+  let frames = [];
+  let faults = 0;
+  let steps = [];
+  let framePointer = 0;
+  pages.forEach((page, i) => {
+    let hit = frames.includes(page);
+    if (!hit) {
+      if (frames.length < capacity) {
+        frames.push(page);
+      } else {
+        frames[framePointer] = page;
+        framePointer = (framePointer + 1) % capacity;
+      }
+      faults++;
+      // Update page table
+      pageTable[page] = { frame: frames.indexOf(page), valid: true };
+    }
+    steps.push({ page, frames: [...frames], fault: !hit, pageTable: { ...pageTable } });
+  });
+  return { faults, steps, finalPageTable: pageTable };
+}
 
 
 const style = `
