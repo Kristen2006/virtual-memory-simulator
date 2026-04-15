@@ -3,6 +3,7 @@ import React, { useState } from "react";
 // -------- LRU --------
 function simulateLRU(pages, capacity) {
   let frames = [];
+  
   let faults = 0;
   let steps = [];
   pages.forEach((page, i) => {
@@ -486,6 +487,7 @@ const style = `
 `;
 
 export default function App() {
+  const [activeSection, setActiveSection] = useState("replacement");
   const [input, setInput] = useState("7,0,1,2,0,3,0,4,2,3,0,3,2");
   const [capacity, setCapacity] = useState(3);
   const [results, setResults] = useState(null);
@@ -508,7 +510,9 @@ export default function App() {
   const [fragResult, setFragResult] = useState(null);
   const runSimulation = () => {
     const pages = input.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n));
-    if (!pages.length) return;
+    if (!pages.length) {
+      alert("Please enter a valid page reference string (comma-separated numbers)");
+      return;}
     setAnimated(false);
     setTimeout(() => {
       setResults({
@@ -518,6 +522,34 @@ export default function App() {
       setAnimated(true);
     }, 50);
   };
+   const runSegmentation = () => {
+    const result = simulateSegmentation(segments, logicalAddr);
+    setSegResult(result);
+  };
+
+  const runDemandPaging = () => {
+    const pages = input.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    if (!pages.length) {
+      alert("Please enter a valid page reference string (comma-separated numbers)");
+      return;
+    }
+    const result = simulateDemandPaging(pages, capacity, { ...pageTable });
+    setDemandResult(result);
+  };
+
+  const runFragmentation = () => {
+    const allocs = fragInput.split(",").map(s => {
+      const num = parseInt(s.trim());
+      return { size: Math.abs(num), allocated: num > 0 };
+    }).filter(a => !isNaN(a.size));
+    if (!allocs.length) {
+      alert("Please enter a valid allocation sequence (comma-separated numbers, positive=allocate, negative=deallocate)");
+      return;
+    }
+    const result = simulateFragmentation(allocs, totalMemory);
+    setFragResult(result);
+  };
+
 
   const maxFaults = results ? Math.max(results.lru.faults, results.optimal.faults) : 1;
   const lruPct = results ? Math.round((results.lru.faults / maxFaults) * 100) : 0;
@@ -525,7 +557,7 @@ export default function App() {
   const savings = results ? results.lru.faults - results.optimal.faults : 0;
   const activeSteps = results ? (activeTab === "lru" ? results.lru.steps : results.optimal.steps) : [];
 
-  return (
+   return (
     <>
       <style>{style}</style>
       <div className="vms-root">
@@ -534,103 +566,360 @@ export default function App() {
           <header className="vms-header">
             <div className="vms-eyebrow">OS Memory Management</div>
             <h1 className="vms-title">Virtual Memory<br />Simulator</h1>
-            <p className="vms-subtitle">Compare LRU vs Optimal page replacement algorithms</p>
+            <p className="vms-subtitle">Explore paging, segmentation, and memory management algorithms</p>
           </header>
 
           <div className="vms-card">
-            <div className="vms-label">Page Reference String</div>
-            <input
-              className="vms-input"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="e.g. 7,0,1,2,0,3,0,4"
-            />
-            <div className="vms-row">
-              <div>
-                <div className="vms-label">Frame Capacity</div>
-                <div className="vms-capacity-wrap">
-                  <button className="vms-capacity-btn" onClick={() => setCapacity(c => Math.max(1, c - 1))}>−</button>
-                  <span className="vms-capacity-val">{capacity}</span>
-                  <button className="vms-capacity-btn" onClick={() => setCapacity(c => Math.min(10, c + 1))}>+</button>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "flex-end" }}>
-                <button className="vms-run-btn" onClick={runSimulation}>▶ Run Simulation</button>
-              </div>
+            <div className="vms-tabs" style={{ marginBottom: 0 }}>
+              <button className={`vms-tab ${activeSection === "replacement" ? "active" : ""}`} onClick={() => setActiveSection("replacement")}>Page Replacement</button>
+              <button className={`vms-tab ${activeSection === "segmentation" ? "active" : ""}`} onClick={() => setActiveSection("segmentation")}>Segmentation</button>
+              <button className={`vms-tab ${activeSection === "demand" ? "active" : ""}`} onClick={() => setActiveSection("demand")}>Demand Paging</button>
+              <button className={`vms-tab ${activeSection === "fragmentation" ? "active" : ""}`} onClick={() => setActiveSection("fragmentation")}>Fragmentation</button>
             </div>
           </div>
 
-          {results && (
+          {activeSection === "replacement" && (
             <>
-              <div className="vms-results-grid">
-                <div className="vms-stat vms-stat-lru">
-                  <div className="vms-stat-algo">LRU Algorithm</div>
-                  <div className="vms-stat-num">{results.lru.faults}</div>
-                  <div className="vms-stat-label">page faults</div>
-                </div>
-                <div className="vms-stat vms-stat-opt">
-                  <div className="vms-stat-algo">Optimal Algorithm</div>
-                  <div className="vms-stat-num">{results.optimal.faults}</div>
-                  <div className="vms-stat-label">page faults</div>
+              <div className="vms-card">
+                <div className="vms-label">Page Reference String</div>
+                <input
+                  className="vms-input"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  placeholder="e.g. 7,0,1,2,0,3,0,4"
+                />
+                <div className="vms-row">
+                  <div>
+                    <div className="vms-label">Frame Capacity</div>
+                    <div className="vms-capacity-wrap">
+                      <button className="vms-capacity-btn" onClick={() => setCapacity(c => Math.max(1, c - 1))}>−</button>
+                      <span className="vms-capacity-val">{capacity}</span>
+                      <button className="vms-capacity-btn" onClick={() => setCapacity(c => Math.min(10, c + 1))}>+</button>
+                    </div>
+                  </div>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
+                  <button className="vms-run-btn" onClick={runSimulation}>▶ Run Simulation</button>
+                  <button 
+                    className="vms-run-btn" 
+                    style={{ background: "rgba(255,80,80,0.2)", borderColor: "rgba(255,80,80,0.3)" }}
+                    onClick={() => setResults(null)}
+                  >
+                    Reset
+                  </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="vms-card">
-                <div className="vms-chart-title">Fault Comparison</div>
-                <div className="vms-bars">
-                  <div className="vms-bar-wrap">
-                    <span className="vms-bar-pct">{results.lru.faults}</span>
-                    <div className="vms-bar-inner vms-bar-lru" style={{ height: animated ? `${lruPct}%` : "0%" }} />
-                    <span className="vms-bar-name" style={{ color: "#a59dff" }}>LRU</span>
+              {results && (
+                <>
+                  <div className="vms-results-grid">
+                    <div className="vms-stat vms-stat-lru">
+                      <div className="vms-stat-algo">LRU Algorithm</div>
+                      <div className="vms-stat-num">{results.lru.faults}</div>
+                      <div className="vms-stat-label">page faults</div>
+                    </div>
+                    <div className="vms-stat vms-stat-opt">
+                      <div className="vms-stat-algo">Optimal Algorithm</div>
+                      <div className="vms-stat-num">{results.optimal.faults}</div>
+                      <div className="vms-stat-label">page faults</div>
+                    </div>
                   </div>
-                  <div className="vms-bar-wrap">
-                    <span className="vms-bar-pct">{results.optimal.faults}</span>
-                    <div className="vms-bar-inner vms-bar-opt" style={{ height: animated ? `${optPct}%` : "0%" }} />
-                    <span className="vms-bar-name" style={{ color: "#00d2b4" }}>Optimal</span>
-                  </div>
-                </div>
-                <div className="vms-efficiency">
-                  {savings > 0
-                    ? <>Optimal saves <span>{savings} fault{savings !== 1 ? "s" : ""}</span> ({Math.round((savings / results.lru.faults) * 100)}% fewer) over LRU</>
-                    : <>Both algorithms perform <span>identically</span> on this reference string</>
-                  }
-                </div>
-              </div>
 
-              <div className="vms-card">
-                <div className="vms-tabs">
-                  <button className={`vms-tab ${activeTab === "lru" ? "active" : ""}`} onClick={() => setActiveTab("lru")}>LRU Steps</button>
-                  <button className={`vms-tab ${activeTab === "opt" ? "active" : ""}`} onClick={() => setActiveTab("opt")}>Optimal Steps</button>
-                </div>
-                <div className="vms-table-wrap">
-                  <table className="vms-table">
-                    <thead>
-                      <tr>
-                        <th>#</th><th>Page</th><th>Frames</th><th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activeSteps.map((step, i) => (
-                        <tr key={i} style={{ background: step.fault ? "rgba(255,80,80,0.04)" : "transparent" }}>
-                          <td style={{ opacity: 0.4 }}>{i + 1}</td>
-                          <td style={{ fontWeight: 700, color: "#fff" }}>{step.page}</td>
-                          <td>
-                            <span className="vms-frame-cell">
-                              {step.frames.map((f, j) => <span key={j} className="vms-frame-tag">{f}</span>)}
-                            </span>
-                          </td>
-                          <td>
-                            {step.fault
-                              ? <span className="vms-fault-yes">FAULT</span>
-                              : <span className="vms-fault-no">HIT</span>}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                  <div className="vms-card">
+                    <div className="vms-chart-title">Fault Comparison</div>
+                    <div className="vms-bars">
+                      <div className="vms-bar-wrap">
+                        <span className="vms-bar-pct">{results.lru.faults}</span>
+                        <div className="vms-bar-inner vms-bar-lru" style={{ height: animated ? `${(results.lru.faults / maxFaults) * 100}%` : "0%" }} />
+                        <span className="vms-bar-name" style={{ color: "#a59dff" }}>LRU</span>
+                      </div>
+                      <div className="vms-bar-wrap">
+                        <span className="vms-bar-pct">{results.optimal.faults}</span>
+                        <div className="vms-bar-inner vms-bar-opt" style={{ height: animated ? `${(results.optimal.faults / maxFaults) * 100}%` : "0%" }} />
+                        <span className="vms-bar-name" style={{ color: "#00d2b4" }}>Optimal</span>
+                      </div>
+                    </div>
+                    <div className="vms-efficiency">
+                      {savings > 0
+                        ? <>Optimal saves <span>{savings} fault{savings !== 1 ? "s" : ""}</span> ({Math.round((savings / results.lru.faults) * 100)}% fewer) over LRU</>
+                        : <>Both algorithms perform <span>identically</span> on this reference string</>
+                      }
+                    </div>
+                  </div>
+
+                  <div className="vms-card">
+                    <div className="vms-tabs">
+                      <button className={`vms-tab ${activeTab === "lru" ? "active" : ""}`} onClick={() => setActiveTab("lru")}>LRU Steps</button>
+                      <button className={`vms-tab ${activeTab === "opt" ? "active" : ""}`} onClick={() => setActiveTab("opt")}>Optimal Steps</button>
+                    </div>
+                    <div className="vms-table-wrap">
+                      <table className="vms-table">
+                        <thead>
+                          <tr>
+                            <th>#</th><th>Page</th><th>Frames</th><th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeSteps.map((step, i) => (
+                            <tr key={i} style={{ background: step.fault ? "rgba(255,80,80,0.04)" : "transparent" }}>
+                              <td style={{ opacity: 0.4 }}>{i + 1}</td>
+                              <td style={{ fontWeight: 700, color: "#fff" }}>{step.page}</td>
+                              <td>
+                                <span className="vms-frame-cell">
+                                  {step.frames.map((f, j) => <span key={j} className="vms-frame-tag">{f}</span>)}
+                                </span>
+                              </td>
+                              <td>
+                                {step.fault
+                                  ? <span className="vms-fault-yes">FAULT</span>
+                                  : <span className="vms-fault-no">HIT</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
+          )}
+
+          {activeSection === "segmentation" && (
+            <div className="vms-card">
+              <div className="vms-label">Segment Table</div>
+              <div className="vms-table-wrap" style={{ marginBottom: 20 }}>
+                <table className="vms-table">
+                  <thead>
+                    <tr>
+                      <th>Segment ID</th><th>Base Address</th><th>Limit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {segments.map((seg, i) => (
+                      <tr key={i}>
+                        <td>{seg.id}</td>
+                        <td>
+                          <input
+                            type="number"
+                            value={seg.base}
+                            onChange={e => {
+                              const newSegments = [...segments];
+                              newSegments[i].base = parseInt(e.target.value) || 0;
+                              setSegments(newSegments);
+                            }}
+                            style={{ width: 80, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, padding: "4px 8px", color: "#e8e8f0" }}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={seg.limit}
+                            onChange={e => {
+                              const newSegments = [...segments];
+                              newSegments[i].limit = parseInt(e.target.value) || 0;
+                              setSegments(newSegments);
+                            }}
+                            style={{ width: 80, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, padding: "4px 8px", color: "#e8e8f0" }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="vms-row">
+                <div>
+                  <div className="vms-label">Logical Address</div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <input
+                      className="vms-input"
+                      style={{ flex: 1 }}
+                      type="number"
+                      value={logicalAddr.segment}
+                      onChange={e => setLogicalAddr({ ...logicalAddr, segment: parseInt(e.target.value) || 0 })}
+                      placeholder="Segment"
+                    />
+                    <input
+                      className="vms-input"
+                      style={{ flex: 1 }}
+                      type="number"
+                      value={logicalAddr.offset}
+                      onChange={e => setLogicalAddr({ ...logicalAddr, offset: parseInt(e.target.value) || 0 })}
+                      placeholder="Offset"
+                    />
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
+                  <button className="vms-run-btn" onClick={runSegmentation}>Translate Address</button>
+                  <button 
+                    className="vms-run-btn" 
+                    style={{ background: "rgba(255,80,80,0.2)", borderColor: "rgba(255,80,80,0.3)" }}
+                    onClick={() => setSegResult(null)}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              {segResult && (
+                <div style={{ marginTop: 20, padding: 16, borderRadius: 10, background: segResult.error ? "rgba(255,80,80,0.1)" : "rgba(0,210,180,0.1)", border: `1px solid ${segResult.error ? "rgba(255,80,80,0.3)" : "rgba(0,210,180,0.3)"}` }}>
+                  {segResult.error ? (
+                    <div style={{ color: "#ff9090" }}>Error: {segResult.error}</div>
+                  ) : (
+                    <div>
+                      <div style={{ color: "#00d2b4", fontWeight: 700 }}>Physical Address: {segResult.physicalAddress}</div>
+                      <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
+                        Segment {segResult.segment.id}: Base {segResult.segment.base}, Limit {segResult.segment.limit}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeSection === "demand" && (
+            <>
+              <div className="vms-card">
+                <div className="vms-label">Page Reference String</div>
+                <input
+                  className="vms-input"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  placeholder="e.g. 7,0,1,2,0,3,0,4"
+                />
+                <div className="vms-row">
+                  <div>
+                    <div className="vms-label">Frame Capacity</div>
+                    <div className="vms-capacity-wrap">
+                      <button className="vms-capacity-btn" onClick={() => setCapacity(c => Math.max(1, c - 1))}>−</button>
+                      <span className="vms-capacity-val">{capacity}</span>
+                      <button className="vms-capacity-btn" onClick={() => setCapacity(c => Math.min(10, c + 1))}>+</button>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
+                    <button className="vms-run-btn" onClick={runDemandPaging}>▶ Run Demand Paging</button>
+                    <button 
+                      className="vms-run-btn" 
+                      style={{ background: "rgba(255,80,80,0.2)", borderColor: "rgba(255,80,80,0.3)" }}
+                      onClick={() => setDemandResult(null)}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {demandResult && (
+                <div className="vms-card">
+                  <div className="vms-label">Demand Paging Results</div>
+                  <div style={{ marginBottom: 16 }}>
+                    <span style={{ color: "#00d2b4", fontSize: 24, fontWeight: 700 }}>{demandResult.faults}</span> page faults occurred
+                  </div>
+                  <div className="vms-table-wrap">
+                    <table className="vms-table">
+                      <thead>
+                        <tr>
+                          <th>#</th><th>Page</th><th>Frames</th><th>Page Table</th><th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {demandResult.steps.map((step, i) => (
+                          <tr key={i} style={{ background: step.fault ? "rgba(255,80,80,0.04)" : "transparent" }}>
+                            <td style={{ opacity: 0.4 }}>{i + 1}</td>
+                            <td style={{ fontWeight: 700, color: "#fff" }}>{step.page}</td>
+                            <td>
+                              <span className="vms-frame-cell">
+                                {step.frames.map((f, j) => <span key={j} className="vms-frame-tag">{f}</span>)}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="vms-frame-cell">
+                                {Object.entries(step.pageTable).map(([page, entry]) => 
+                                  entry.valid ? <span key={page} className="vms-frame-tag">{page}→{entry.frame}</span> : null
+                                )}
+                              </span>
+                            </td>
+                            <td>
+                              {step.fault
+                                ? <span className="vms-fault-yes">PAGE FAULT</span>
+                                : <span className="vms-fault-no">HIT</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeSection === "fragmentation" && (
+            <div className="vms-card">
+              <div className="vms-label">Memory Allocation Sequence</div>
+              <input
+                className="vms-input"
+                value={fragInput}
+                onChange={e => setFragInput(e.target.value)}
+                placeholder="e.g. 50,30,-30,20,-50,40 (positive=allocate, negative=deallocate)"
+              />
+              <div className="vms-row">
+                <div>
+                  <div className="vms-label">Total Memory Size</div>
+                  <div className="vms-capacity-wrap">
+                    <button className="vms-capacity-btn" onClick={() => setTotalMemory(c => Math.max(10, c - 10))}>−</button>
+                    <span className="vms-capacity-val">{totalMemory}</span>
+                    <button className="vms-capacity-btn" onClick={() => setTotalMemory(c => Math.min(200, c + 10))}>+</button>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
+                  <button className="vms-run-btn" onClick={runFragmentation}>▶ Simulate Fragmentation</button>
+                  <button 
+                    className="vms-run-btn" 
+                    style={{ background: "rgba(255,80,80,0.2)", borderColor: "rgba(255,80,80,0.3)" }}
+                    onClick={() => setFragResult(null)}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              {fragResult && (
+                <>
+                  <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                    <div style={{ padding: 16, borderRadius: 10, background: "rgba(99,60,255,0.1)", border: "1px solid rgba(99,60,255,0.3)", textAlign: "center" }}>
+                      <div style={{ color: "#a59dff", fontSize: 20, fontWeight: 700 }}>{fragResult.totalFree}</div>
+                      <div style={{ fontSize: 12, opacity: 0.7 }}>Total Free Memory</div>
+                    </div>
+                    <div style={{ padding: 16, borderRadius: 10, background: "rgba(0,210,180,0.1)", border: "1px solid rgba(0,210,180,0.3)", textAlign: "center" }}>
+                      <div style={{ color: "#00d2b4", fontSize: 20, fontWeight: 700 }}>{fragResult.largestFree}</div>
+                      <div style={{ fontSize: 12, opacity: 0.7 }}>Largest Free Block</div>
+                    </div>
+                    <div style={{ padding: 16, borderRadius: 10, background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", textAlign: "center" }}>
+                      <div style={{ color: "#ff9090", fontSize: 20, fontWeight: 700 }}>{fragResult.fragmentation}</div>
+                      <div style={{ fontSize: 12, opacity: 0.7 }}>Fragmentation</div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 20 }}>
+                    <div className="vms-label">Memory Visualization</div>
+                    <div style={{ display: "flex", gap: 2, flexWrap: "wrap", marginTop: 8 }}>
+                      {fragResult.steps[fragResult.steps.length - 1].memory.map((cell, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: 8,
+                            height: 8,
+                            background: cell ? "#6330ff" : "#00d2b4",
+                            borderRadius: 1
+                          }}
+                          title={`Address ${i}: ${cell ? "Allocated" : "Free"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           )}
 
         </div>
