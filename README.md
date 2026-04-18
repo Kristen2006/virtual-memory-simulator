@@ -1,4 +1,6 @@
 🧠 Virtual Memory Management Simulator
+
+
 An interactive web-based simulator that visualizes key Operating System memory management concepts — including paging, page faults, and page replacement algorithms — with step-by-step execution and graphical performance comparison.
 
 
@@ -73,8 +75,10 @@ A page fault occurs when a referenced page is not currently in any frame. The OS
 
 Demand Paging
 Pages are loaded into memory only when accessed, reducing unnecessary memory usage.
-
+___________________________________________________________________________________________________________________________________________________________________
 📈 Output
+
+
 After running the simulator, you'll see:
 
 ✅ Total page faults for each algorithm
@@ -87,7 +91,7 @@ After running the simulator, you'll see:
 
 
 📉 Hit rate percentage — proportion of accesses that did not cause a fault
-
+___________________________________________________________________________________________________________________________________________________________________
 
 ## 📁 Project Structure
 
