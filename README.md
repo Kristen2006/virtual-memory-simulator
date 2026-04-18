@@ -1,29 +1,25 @@
 🧠 Virtual Memory Management Simulator
+An interactive web-based simulator that visualizes key Operating System memory management concepts — including paging, page faults, and page replacement algorithms — with step-by-step execution and graphical performance comparison.
 
-📌 Overview
 
-This project is an interactive web-based simulator that demonstrates key concepts of operating system memory management, including paging, segmentation, and page replacement algorithms. It allows users to visualize how memory is allocated and how different algorithms affect performance.
+📸 Preview
 
+Run the app locally and open http://localhost:5173 to see the simulator in action.
 🎯 Features 
-
-🔹 Paging simulation with frame allocation
-
-🔹 Page fault detection and tracking
-
-🔹 LRU (Least Recently Used) algorithm
-
-🔹 Optimal page replacement algorithm
-
-🔹 Step-by-step execution table
-
-🔹 Interactive UI with user input
-
-🔹 Graphical comparison of algorithms
-
-🔹 Performance analysis (fault comparison)
+```
+  Features               Description
+🔹 Paging Simulation      Frame allocation with configurable frame count
+⚠️ Page Fault Detection   Tracks and highlights every page fault in the trace
+🔁LRU AlgorithmLeast      Recently Used page replacement
+🔮 Optimal Algorithm      Theoretical best-case replacement (benchmark)
+📦 FIFO Algorithm         First In, First Out replacement
+📊 Step-by-Step Table     Color-coded execution trace per reference
+📈 Algorithm Comparison   Side-by-side fault count visualization
+📉 Performance Analysis   Hit rate, fault count, and hit count metrics   
+```
 
 ⚙️ Technologies Used
-
+```
 React.js
 
 JavaScript
@@ -31,43 +27,68 @@ JavaScript
 HTML & CSS
 
 Vite
+```
+🚀 Getting Started
+Prerequisites
 
-🧪 How to Run
+Node.js v16 or higher
+npm v7 or higher
+Installation & Run
+```
+# Clone the repository
+git clone https://github.com/your-username/virtual-memory-simulator.git
 
+# Navigate into the project
+cd virtual-memory-simulator
+
+# Install dependencies
 npm install
 
+# Start the development server
 npm run dev
-
-
-Then open:
-
+```
+Then open your browser and visit:
 http://localhost:5173
-
 📊 Example Input
-
+```
 Reference String: 7,0,1,2,0,3,0,4,2,3,0,3,2
 
 Frames: 3
+Expected Output
+Algorithm   Page Faults
+LRU           8
+Optimal       7
+```
+
 
 🧠 Concepts Covered
-
 Paging
 
-Segmentation (basic concept)
+Memory is divided into fixed-size blocks called pages (logical) and frames (physical). The OS maps pages to frames and tracks them via a page table.
+
 
 Page Faults
+A page fault occurs when a referenced page is not currently in any frame. The OS must load it from secondary storage, potentially evicting an existing page.
+
 
 Demand Paging
-
-LRU Algorithm
-
-Optimal Algorithm
+Pages are loaded into memory only when accessed, reducing unnecessary memory usage.
 
 📈 Output
+After running the simulator, you'll see:
 
-Total page faults
+✅ Total page faults for each algorithm
 
-Step-by-step memory state
+
+🗂️ Step-by-step memory state — color-coded fault vs. hit per reference
+
+
+📊 Comparison bar chart — visualizes fault counts across LRU, Optimal
+
+
+📉 Hit rate percentage — proportion of accesses that did not cause a fault
+
+
 ## 📁 Project Structure
 
 ```
